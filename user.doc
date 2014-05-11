@@ -1,0 +1,111 @@
+mystring.h 这个头文件包含了一些查询语句的预处理的函数，有关于字符串处理的函数都会放在这里
+errno.h    这个头文件是包含一些错误代码的声明，有关错误处理的函数可以在这里找到
+*****.c    这种文件只要有对应头文件相同的前面部分说明是这个声明头文件的具体函数实现文件
+passwd.h   这里包含了一些关于密码管理认证的一些函数声明，关于安全和密码的的函数可以找这个头文件中找到声明
+passwd     这个文件存放是加密的密码
+global.h   一些全局函数在这里声明
+           init()和distory()函数，分别是开始时候初始化，和结束时候清理用的两个函数，一些需要的开始和结尾的工作可以在这两个函数内调用
+           init()中调用了加载table的函数，distory()释放了内存
+           可能要修改了，在每次选择一个database的时候调用加载table的函数
+           int is_choose_database;这个东西是来标志是否选择某个数据库，0没有，1 有
+           在进入其他数据库的时候可以首先判断这个变量是否为1，如果为1，那么就返回父目录后再进入其他目录,在init中被初始化为0
+           有my_table指针，这个指针就指向刚才创建的表的信息
+global.c   所有关键字和关键字的数目在这里声明在这里声明
+           这里还有一个函数find_function()作用是检测关键字对应的功能代码
+type.h     这里面有table_info的声明和colum_info的声明
+file.h     所有关于文件操作等函数可以在这里找到
+create.h   所有关于create的函数和操作方法声明可以在这里找到
+main.c     这个函数是整个sqlmini的入口 
+select.h   这个头文件声明关于select的相关函数的声明
+insert.h   这个头文件声明关于insert的相关函数的声明
+makefile   这个脚本是用来编译整个工程的，编译之前先make clean，然后直接make
+table_info 这个文件里存放的是本数据库里面所有表的信息，可以在每次启动的时候常驻内存
+
+data_produce.c 这个函数是用来随机生成表中数据的，可以根据用户需要做相应修改生成相应数据放到制定文件中
+*******************************************************************************
+注意我们这里的语法检测机制，第一步是初步检测，检测括号等是否匹配，是否有不能识别的字符（中文字符）实现的是基本的语法检测
+第二步 根据第一个分离出来的动词来确定功能，之后的事情就交给负责这个动词功能的代码，包括语法检测
+
+*******************************************************************************
+已实现的功能
+密码修改
+语法初步检测
+sql语句压缩
+create database的功能,包括语法检测!
+show databases 这个功能在那个目录里面都可以用，因为在内存中早就加载完成了
+show tables功能
+describe table_name 功能
+use database_name 功能
+insert 功能
+不带where的select 功能
+help 功能
+****************************************************************************
+每次数据库加载开始运行的时候就会在init内部把所有的表加载到这个global.h里面的table_list里面
+每次创建完成一个表后都会在当前文件夹里面创建table_name.db这个文件，用来存放这个表的内容
+
+
+******************************************************************************
+用户使用实例步骤
+1.进入相应目录 /home/chy/mywork/sqlmini
+2.->make  # 进行编译
+3.->make run  #启动数据库
+4.输入密码
+5.show databases; #会显示sqlmini已经存在的数据库，如果没有那么就会有相应提示
+6.show tables;    #报错，会提示你没选择任何数据库
+7.create database chy_db;#创建一个名为chy_db的数据库
+8.show databases;        #显示系统当前所有的数据库，发现比之前多个chy_db
+9.use chy_db;#选择刚创建的数据库 chy_db;
+10.show tables; #会提示没有任何表的存在
+11.create table student( name char(50) not null ,
+                      sid char(20) primary key not null ,
+                      age int ,score int ,
+                      gid char(30) not null);#创建一个名为student的表
+12.再执行一次11会有相应重复表名提示
+13.show tables;#发现数据库内出现一个student的表
+14.describe student;#查阅对表student的描述
+15.select * from student;#选择所有的东西，发现只有一行列名，说明表里面什么内容也没有
+16.insert into student() values("sunrain","2011310200810",18,100,"95001");#插入一组数据
+17.执行15会发现刚才插入表的内容，select 支持任意列名顺序和*，也就是你可以想怎么写怎么写
+18.再次执行17，会提示主键重复
+19.insert into student(name,sid,age,score,gid) values("chy","2011310200811",18,100,"95001");#和16功能一样，不过是换一种表达方式
+20.执行15观察插入结果
+21.insert into student(name,sid,gid) values("windy","2011310200812","95002");#插入一组数据，其中age和score允许为空，全部设置为NULL
+22.执行15，观察windy的那一行age和score值为NULL
+23.insert into student(name,age,score,gid) values("space",20,99,"95004");#会提示主键不能为空，因为sid是主键，但是没值插入
+24.insert into student(name,sid,age,score) values("space","2011310200813",20,99);#会提示有列不能为空，因为最后gid是不允许为空的
+25.可以自己随便执行一些select语句，自己体验一下
+26.drop table student;#删除student表
+27.show tables;
+28.drop chy_db;#删除名为chy_db的数据库
+29.show databases;
+30.自己随便输入一些东西玩玩
+31.体验修改密码功能a.输入passwd 输入旧密码，然后两次输入新密码，系统会提示修改结果，退出重新登录见效果
+
+###########################################################################################
+select 加强功能 where 部分
+select * from student where name="..." and age=... or .....
+后面的select的逻辑要求支持 > < = >= <= 几种，逻辑判断一定没有括号指定，否则会报错
+也就是这样 condition1 or condition2 or condition3 .....
+           condition1 and condition2 and condition3 .....
+           condition1 or condition2  and condition3 ....
+  这样说吧，只要是不带括号的逻辑判断就都能支持，条件之间用and 或者or 来连接，不支持is null 和 is not null;
+
+select where 部分示例
+
+1.use mysql;
+2.select * from user;
+3.select name,* from user where name="chy";
+4.select * from user where name="lifen" or name="chy";
+5.select * from user where age>=18;
+6.select * from user where age=18;
+7.select * from user where age<=20;
+8.select * from user where age>18;
+9.select * from user where age<21;
+
+上面的*可以换成任意合法的字段，后面逻辑判断条件可以换成任意在 = > < >= <= 的逻辑 用and 和or 连接的任何逻辑表达式，都支持
+
+还有一点要注意 比如说age=02 ，那么选择 where age=2不会输出任何结果，一定要写 where age=02 才能通过
+
+记住：密码修改一定要记住你修改后的密码，否则在不修改代码的情况下是比较麻烦的，因为密码是加密了的！除非删除特定文件令密码置空
+
+
