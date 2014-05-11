@@ -1,0 +1,45 @@
+   sqlmini标准
+   一条sql语句以分号结尾，如果语句没加分号则该语句不予执行！
+   sql语句中不支持字符的转义
+   sql字段命名不支持内部有多个连续的空格，如果存在DBMS会自动转换成一个空格
+   在sql语句的任何位置都不能出现中文，也就是我们的DBMS不支持中文
+   在语法解析的时候只会指出你的sql语句是否正确的指示，最多每次会提示一处错误信息
+   sql语句单纯输入passwd可以实现密码的修改!
+   sql语句输入exit退出sqlmini
+   sql语句输入help会显示帮助
+   create table 暂时不支持外键，不支持主码为多个primary key 要写在not null的前面，否则会报语法错误
+   主码在声明的时候一定是在定义列的时候
+   列名可以重复，但是在选择的时候一定是第一个出现的选择，包括任何操作一定是以第一个操作的为主，所以尽量控制不要重复
+   EX:
+   create table MyClass(
+   id int primary key not null ,
+   name char(20) not null,
+   sex int not null,
+   degree double);
+   支持passwd命令修改密码功能
+   支持help功能
+   支持create database name;
+   支持describe table_name;
+   支持show tables;
+   上面三个皆按照标准来的，能够检测语法错误!
+   实现了show databases功能，显示整个sqlmini的所有数据库
+   use database_name  选中数据库
+   drop database_name 实现数据库的删除，无任何残留
+   支持drop table table_name 实现数据表的删除，无任何残留
+   支持insert数据，这里我们有自己的标准，如果要插入该表的所有行，那么就这样
+   insert into table_name() values(...);也就是如果要插入所有行在前面那个括号里面什么也不放，一个空括号就OK 了
+   还有就是插入的顺序一定要和表原先列的顺序一致，否则会报错,这个其实是可以不按照顺序的，但是这样实现起来要花一定的时间，周一要演示，先这样规定
+   插入的所有数值类型的数据就是单纯的数据，插入的字符串一定是双引号引起来，否则报错
+   如果只想插入特定的列的值那么可以直接这样 insert into table_name(colum_name1,colum_name2...) values(....);
+   上面的全部东西都不需要多考虑，只要按照顺序来就行，我们的sqlmini会帮你检查出语法和语义是否正确并会给出相应提示，如果都没错，就执行
+   目前初步完成不带where的select功能，要求随便，支持select * from student;
+ 
+   where 字句解析执行功能
+   对于select 的where部分，现在提供了强大的支持，但是还是有所局限
+   支持逻辑条件  > < = >= <= 提供的四种数据类型都支持这样的操作
+   对于给定的逻辑表达式只能顺序制定逻辑条件，也就是说不能用括号来强制逻辑条件之间的结合
+   select * from user where name="chy" and age=20;
+   在给定逻辑条件的时候不能带括号
+   比如说 a and b or c and d or c and e
+   minisql会解释为and 的一定是全部对or的有一个对就通过
+   逻辑关系之间用or 或者and连接   
